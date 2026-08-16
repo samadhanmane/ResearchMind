@@ -1,87 +1,371 @@
 # ResearchMind — Multi-Agent AI Research System
 
-ResearchMind is a lightweight multi-agent research pipeline built with LangChain and Streamlit. Four specialized agents (search, reader, writer, critic) collaborate to gather recent web information, scrape deep content, draft a structured research report, and provide a constructive critique.
+ResearchMind is a lightweight **multi-agent AI research system** built with **LangChain, Streamlit, and Mistral**. It uses specialized AI agents to search the web, extract information from reliable sources, generate a structured research report, and critically evaluate the final output.
 
-Stack
-- Language(s): Python 3.10+
-- Framework / runtime: Streamlit (UI) + LangChain agents
-- Notable libraries: langchain, langchain-mistralai, tavily-python, beautifulsoup4
+The system is designed as a modular research pipeline where each agent has a specific responsibility:
 
-What this repository does
-ResearchMind accepts a topic, runs a web search (via Tavily), scrapes top sources, drafts a detailed report using a LLM (Mistral/compatible through LangChain), and produces a scored critique. It ships both a Streamlit UI (`app.py`) and a programmatic/CLI pipeline (`pipeline.py`).
+**Search → Reader → Writer → Critic**
 
-Repository layout
+---
+
+## 🚀 Features
+
+* 🔎 **Web Research** — Search the web for recent and relevant information using Tavily.
+* 📄 **Deep Content Extraction** — Scrape and extract useful content from web pages.
+* 🤖 **Multi-Agent Architecture** — Separate agents handle searching and reading tasks.
+* ✍️ **AI Report Generation** — Generate structured research reports using an LLM.
+* 🧐 **AI Critic** — Evaluate the generated report and provide constructive feedback.
+* 🖥️ **Streamlit Interface** — Interactive UI for running research tasks.
+* 💻 **CLI Pipeline** — Run the complete research workflow directly from the terminal.
+* 🧩 **Modular Architecture** — Search, scraping, agents, prompts, and pipeline execution are separated into different modules.
+* 🔄 **LLM Flexibility** — Designed around LangChain so the underlying LLM can be changed with minimal modifications.
+
+---
+
+## 🏗️ Architecture
+
+```text
+                         ┌─────────────────────┐
+                         │      User Topic     │
+                         └──────────┬──────────┘
+                                    │
+                                    ▼
+                         ┌─────────────────────┐
+                         │   Search Agent      │
+                         │                     │
+                         │  Web Search/Tavily  │
+                         └──────────┬──────────┘
+                                    │
+                              Search Results
+                                    │
+                                    ▼
+                         ┌─────────────────────┐
+                         │    Reader Agent     │
+                         │                     │
+                         │ URL Scraping +      │
+                         │ Content Extraction  │
+                         └──────────┬──────────┘
+                                    │
+                              Research Data
+                                    │
+                                    ▼
+                         ┌─────────────────────┐
+                         │    Writer Chain     │
+                         │                     │
+                         │ Structured Report   │
+                         └──────────┬──────────┘
+                                    │
+                              Draft Report
+                                    │
+                                    ▼
+                         ┌─────────────────────┐
+                         │    Critic Chain     │
+                         │                     │
+                         │ Score + Feedback    │
+                         └──────────┬──────────┘
+                                    │
+                                    ▼
+                         ┌─────────────────────┐
+                         │   Final Research    │
+                         │      Output         │
+                         └─────────────────────┘
 ```
-app.py           # Streamlit UI: visual pipeline and results display
-agent.py         # Agent & chain construction (search/reader/writer/critic)
-tools.py         # Tools used by agents: web_search (Tavily), scrape_url (requests + BeautifulSoup)
-pipeline.py      # Procedural runner for the full research pipeline (CLI-friendly)
-requirements.txt # Python dependencies
-README.md        # This file
-.gitignore
+
+---
+
+## 🧠 How It Works
+
+ResearchMind processes a research topic through four major stages.
+
+### 1. Search Agent
+
+The Search Agent receives the user's research topic and searches the web for:
+
+* Recent information
+* Relevant sources
+* Reliable articles
+* Supporting evidence
+* Multiple perspectives
+
+The agent uses the `web_search` tool powered by Tavily.
+
+### 2. Reader Agent
+
+The Reader Agent takes the URLs discovered during the search stage and extracts useful information from them.
+
+It uses:
+
+* `requests`
+* `BeautifulSoup`
+* HTML cleaning
+* Text extraction
+
+The extracted information is then passed to the writing stage.
+
+### 3. Writer Chain
+
+The Writer Chain receives the collected research information and generates a structured research report.
+
+The generated report can include:
+
+* Introduction
+* Key findings
+* Important facts
+* Analysis
+* Supporting evidence
+* Conclusion
+
+### 4. Critic Chain
+
+The Critic Chain evaluates the generated report.
+
+It provides:
+
+* Overall score
+* Strengths
+* Weaknesses
+* Missing information
+* Accuracy concerns
+* Suggestions for improvement
+
+This creates a feedback layer instead of simply returning the first generated answer.
+
+---
+
+## 🛠️ Technology Stack
+
+| Technology     | Purpose                         |
+| -------------- | ------------------------------- |
+| Python 3.10+   | Core programming language       |
+| LangChain      | Agent and LLM orchestration     |
+| Mistral        | Language model                  |
+| Tavily         | Web search                      |
+| BeautifulSoup4 | Web scraping                    |
+| Requests       | HTTP requests                   |
+| Streamlit      | Web interface                   |
+| python-dotenv  | Environment variable management |
+
+---
+
+## 📁 Repository Structure
+
+```text
+ResearchMind/
+│
+├── app.py
+├── agent.py
+├── tools.py
+├── pipeline.py
+├── requirements.txt
+├── README.md
+├── LICENSE
+└── .gitignore
 ```
 
-How it fits together
-- app.py is the Streamlit entry point used for interactive sessions. It calls the same agents and chains built in `agent.py`.
-- `agent.py` composes two agents (search + reader) using LangChain's `create_agent`, and two chains (writer + critic) implemented with chat prompts + LLM.
-- `tools.py` exposes the `web_search` and `scrape_url` tools that agents use during the pipeline. `web_search` relies on the Tavily API.
-- `pipeline.py` provides a non-interactive runner to produce the same outputs from the terminal.
+### `app.py`
 
-Quickstart (local)
-1. Clone and create a virtual environment
+Streamlit application and interactive user interface.
+
+### `agent.py`
+
+Contains the construction of:
+
+* Search Agent
+* Reader Agent
+* Writer Chain
+* Critic Chain
+
+### `tools.py`
+
+Contains tools used by the agents:
+
+* `web_search`
+* `scrape_url`
+
+### `pipeline.py`
+
+Provides a programmatic/CLI version of the complete research pipeline.
+
+### `requirements.txt`
+
+Contains the Python dependencies required to run the project.
+
+### `LICENSE`
+
+Contains the MIT License for the project.
+
+---
+
+## ⚙️ Installation
+
+### 1. Clone the repository
 
 ```bash
-git clone https://github.com/samadhanmane/MultiAgentAI_ResearchSystem.git
-cd MultiAgentAI_ResearchSystem
+git clone https://github.com/samadhanmane/ResearchMind.git
+cd ResearchMind
+```
+
+### 2. Create a virtual environment
+
+#### Windows
+
+```bash
 python -m venv .venv
-source .venv/bin/activate  # or .\.venv\Scripts\activate on Windows
+.venv\Scripts\activate
+```
+
+#### Linux/macOS
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+```
+
+### 3. Install dependencies
+
+```bash
 pip install -r requirements.txt
 ```
 
-2. Add credentials
-Create a `.env` file in the repo root with at least the Tavily API key. Example:
+---
 
-```
-TAVILY_API_KEY=your_tavily_api_key_here
-# plus any LLM provider keys required by your LangChain integration, e.g.:
-# MISTRALAI_API_KEY=...
-# OPENAI_API_KEY=...
+## 🔑 Environment Variables
+
+Create a `.env` file in the root directory:
+
+```env
+TAVILY_API_KEY=your_tavily_api_key
+
+MISTRALAI_API_KEY=your_mistral_api_key
 ```
 
-3. Run the Streamlit app
+Depending on the LLM provider you configure, additional environment variables may be required.
+
+**Never commit your ****`.env`**** file or API keys to GitHub.**
+
+---
+
+## ▶️ Running the Application
+
+### Streamlit UI
+
+Run:
 
 ```bash
 streamlit run app.py
 ```
 
-Or run the CLI pipeline
+The Streamlit interface will allow you to enter a research topic and execute the complete pipeline interactively.
+
+### CLI Pipeline
+
+You can also run the pipeline directly:
 
 ```bash
 python pipeline.py
-# then enter a research topic when prompted
 ```
 
-Environment variables and configuration
-- TAVILY_API_KEY: required for `tools.web_search` (Tavily client)
-- LLM credentials: the app uses LangChain + ChatMistralAI; configure whichever provider keys your LangChain/Mistral adapter expects (environment variables depend on the adapter you use).
+Then enter the research topic when prompted.
 
-Files of interest
-- `app.py`: UI, pipeline orchestration in the browser
-- `agent.py`: prompt templates and agent/chain definitions
-- `tools.py`: web search and scraping helpers
-- `pipeline.py`: scriptable runner (prints progress to stdout)
-- `requirements.txt`: dependency hints used by the project
+---
 
-Notes & caveats
-- Scraping: `scrape_url` uses requests + BeautifulSoup and returns a text slice (first ~3000 chars). It intentionally removes some tags (script, style, nav, footer), but results may still contain noise — adjust as needed.
-- Safety & rate limits: be mindful of provider rate limits (Tavily and the LLM provider). Add retries or backoff if you scale usage.
-- Models: the repo references `mistral-small-2506` via `langchain_mistralai.ChatMistralAI`. If you use a different LLM, update the model initialization in `agent.py`.
+## 🔬 Example
 
-Development & contribution
-- Open an issue or a PR if you'd like to add features, e.g., multi-URL scraping, caching search results, or richer prompt templates.
+Input:
 
-License
-- No license file provided. Add a LICENSE if you intend to publish this project.
+```text
+Impact of Generative AI on Software Engineering
+```
 
-Acknowledgements
-- Built with LangChain, Tavily, BeautifulSoup and Streamlit.
+ResearchMind performs:
+
+```text
+Topic
+  ↓
+Web Search
+  ↓
+Relevant Sources
+  ↓
+Web Scraping
+  ↓
+Extracted Research
+  ↓
+AI Report Generation
+  ↓
+AI Criticism
+  ↓
+Final Research Report
+```
+
+---
+
+## ⚠️ Limitations
+
+ResearchMind is currently designed as a lightweight research system and has some limitations:
+
+* Web pages may block automated requests.
+* Scraped content may contain unwanted text or formatting.
+* The current scraper extracts a limited amount of content from each page.
+* Search and LLM providers have API rate limits.
+* Generated information should be independently verified for critical research.
+* Some websites may require JavaScript rendering and therefore cannot be fully scraped using `requests` and BeautifulSoup.
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome.
+
+If you would like to improve ResearchMind:
+
+1. Fork the repository.
+2. Create a new branch.
+
+```bash
+git checkout -b feature/your-feature
+```
+
+3. Make your changes.
+4. Commit your changes.
+
+```bash
+git commit -m "Add your feature"
+```
+
+5. Push the branch.
+
+```bash
+git push origin feature/your-feature
+```
+
+6. Open a Pull Request.
+
+---
+
+## 📜 License
+
+ResearchMind is licensed under the **MIT License**.
+
+---
+
+## 🙌 Acknowledgements
+
+ResearchMind is built using:
+
+* LangChain
+* Mistral AI
+* Tavily
+* Streamlit
+* BeautifulSoup
+
+---
+
+## 👨‍💻 Author
+
+**Samadhan Mane**
+
+GitHub: `https://github.com/samadhanmane`
+
+---
+
+⭐ If you find ResearchMind useful, consider giving the repository a star!
